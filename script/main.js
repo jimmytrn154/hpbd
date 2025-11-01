@@ -1,3 +1,33 @@
+// Enable audio on first user interaction (browser autoplay policy)
+(() => {
+  const audioEl = document.getElementById("bgm") || document.querySelector("audio");
+  if (!audioEl) return;
+
+  const tryPlay = () => {
+    try {
+      audioEl.muted = false;
+      const r = audioEl.play();
+      if (r && typeof r.then === "function") {
+        r.catch(() => { /* wait for next user gesture */ });
+      }
+    } catch (_) { /* noop */ }
+  };
+
+  const once = () => {
+    tryPlay();
+    document.removeEventListener("click", once);
+    document.removeEventListener("touchstart", once);
+    document.removeEventListener("keydown", once);
+  };
+
+  document.addEventListener("click", once);
+  document.addEventListener("touchstart", once);
+  document.addEventListener("keydown", once);
+
+  // Attempt immediately as well (works if browser allows autoplay)
+  tryPlay();
+})();
+
 // Import the data to customize and insert them into page
 const fetchData = () => {
   fetch("customize.json")
